@@ -1,0 +1,273 @@
+<?php
+
+/**
+ * @file
+ * Bootstrap sub-theme.
+ *
+ * Place your custom PHP code in this file.
+ */
+
+use Drupal\taxonomy\Entity\Term;
+
+function pbcom_preprocess_node(&$variables){
+
+	$results = db_query("SELECT * FROM pbc_taxonomy_term_field_data WHERE vid = 'about_us_category' order by tid asc")->fetchAll();
+
+	foreach($results  as $key => $value){
+		$about_us_sub_content[$key] = $value;
+
+		$result = db_query("SELECT n.nid,n.title FROM pbc_node_field_data n inner join pbc_node__field_about_us_category t where t.entity_id=n.nid and t.bundle='about_us' and n.type='about_us' and t.field_about_us_category_target_id='".$value->tid."'")->fetchAll();
+
+		foreach($result as $key1 => $value1)
+		{
+			$options = ['absolute' => TRUE];
+			$url_object = Drupal\Core\Url::fromRoute('entity.node.canonical', ['node' => $value1->nid], $options);
+
+			$result[$key1]->full_url = $url_object;
+		}
+
+		$about_us_sub_content[$key]->node_details = $result;
+
+		$result1 = db_query("SELECT fm.uri FROM pbc_taxonomy_term__field_taxonomy_image tx inner join pbc_file_managed fm where tx.field_taxonomy_image_target_id=fm.fid and tx.bundle='about_us_category' and tx.entity_id='".$value->tid."'")->fetchAll();
+
+
+		$about_us_sub_content[$key]->taxonomy_image = ($result1[0]->uri ? file_create_url($result1[0]->uri) : '');
+
+	}
+
+	$variables['about_us_category']=$about_us_sub_content;
+
+
+	$isFrontPage = \Drupal::service('path.matcher')->isFrontPage();
+
+	if(!$isFrontPage)
+	{
+		if($node = \Drupal::request()->attributes->get('node'))
+			{
+
+				$nid = $node->id();
+
+				$type = $node->getType();
+				if($type == 'about_us')
+				{
+					$field_about_us_category_array = $node->get('field_about_us_category')->getValue();
+
+					$field_about_us_category = $field_about_us_category_array[0]['target_id'];
+
+					$results_taxonomy = db_query("SELECT * FROM pbc_taxonomy_term_field_data WHERE tid = '".$field_about_us_category."'")->fetchAll();
+
+
+
+					$result = db_query("SELECT n.nid,n.title FROM pbc_node_field_data n inner join pbc_node__field_about_us_category t where t.entity_id=n.nid and t.bundle='about_us' and n.type='about_us' and t.field_about_us_category_target_id='".$field_about_us_category."'")->fetchAll();
+
+					foreach($result as $key1 => $value1)
+					{
+						$options = ['absolute' => TRUE];
+						$url_object = Drupal\Core\Url::fromRoute('entity.node.canonical', ['node' => $value1->nid], $options);
+
+						$result[$key1]->full_url = $url_object;
+					}
+
+					/*echo "<pre>";
+					print_r($results_taxonomy);
+					echo "</pre>";*/
+					/*echo "<pre>";
+					print_r($result);
+					echo "</pre>";*/
+
+					$url_object_about_us = Drupal\Core\Url::fromRoute('entity.node.canonical', ['node' => 3], $options);
+
+					$variables['back_to_about_us_url'] = $url_object_about_us;
+
+					$variables['related_about_us'] = $result;
+					$variables['current_node_id'] = $nid;
+					$variables['current_taxonomy'] = $results_taxonomy[0]->name;
+
+				}
+			}
+		}
+
+
+	}
+
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for form templates.
+ * @param array $suggestions
+ * @param array $variables
+ * Needing to add page--<content_type_name>.html.twig to build
+ */
+
+
+
+function pbcom_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+    //-- accesses the content type on page landing
+    $access_content_type = _theme_name__access_content_type(); //-- custom function
+    //
+    if ($access_content_type != NULL ) {
+    	$suggestions[] = 'page__' .$access_content_type;
+    }
+
+    if (\Drupal::routeMatch()->getRouteName() == 'entity.taxonomy_term.canonical' && $tid = \Drupal::routeMatch()->getRawParameter('taxonomy_term')) {
+
+    	$term = Term::load($tid);
+    	$suggestions[] = 'page__taxonomy__' . $term->getVocabularyId();
+    }
+
+}
+
+
+/**
+ * Access current content type on page load.
+ * Changing the function name protects you 
+ * from other modules.
+ * @return mixed
+ */
+function _theme_name__access_content_type(){
+	if ($node = \Drupal::routeMatch()->getParameter('node')) {
+		return  $node->bundle();
+	}
+	return NULL;
+}
+
+
+//function pbcom_theme_preprocess_taxonomy_term(&$variables) {
+function pbcom_preprocess_page(&$variables) {
+
+	if (\Drupal::routeMatch()->getRouteName() == 'entity.taxonomy_term.canonical' && $tid = \Drupal::routeMatch()->getRawParameter('taxonomy_term')) {
+
+		$term = Term::load($tid);
+
+		/*echo $tid;
+
+		$term_ids =  array ($tid);
+		$nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties([
+			'field_tags' => $term_ids,
+		]);*/
+
+		
+		$result = db_query("SELECT n.nid,n.title FROM pbc_node_field_data n inner join pbc_node__field_career_category t where t.entity_id=n.nid and t.bundle='careers' and n.type='careers' and t.field_career_category_target_id='".$tid."'")->fetchAll();
+
+		foreach($result as $key1 => $value1)
+		{
+			$options = ['absolute' => TRUE];
+			$url_object = Drupal\Core\Url::fromRoute('entity.node.canonical', ['node' => $value1->nid], $options);
+
+			$result[$key1]->full_url = $url_object;
+		}
+
+		$variables['career_page_content'] = $result;
+
+		echo "<pre>";
+		print_r($result);
+		echo "</pre>";
+
+		/*echo "<pre>";
+		print_r($nodes);
+		echo "</pre>";*/
+
+	}
+
+}
+
+/*function pbcom_preprocess_html(&$variables)
+{
+	$isFrontPage = \Drupal::service('path.matcher')->isFrontPage();
+
+	$variables['related_about_us']= "Test";
+
+	if(!$isFrontPage)
+	{
+		if($node = \Drupal::request()->attributes->get('node'))
+			{
+
+				$nid = $node->id();
+
+				/*$node_details = node_load($nid);
+
+				print_r($node_details);*/
+
+				/*$type = $node->getType();
+				if($type == 'about_us')
+				{
+					$field_about_us_category_array = $node->get('field_about_us_category')->getValue();
+
+					$field_about_us_category = $field_about_us_category_array[0]['target_id'];
+			//kint($node);
+
+					$result = db_query("SELECT n.nid,n.title FROM pbc_node_field_data n inner join pbc_node__field_about_us_category t where t.entity_id=n.nid and t.bundle='about_us' and n.type='about_us' and t.field_about_us_category_target_id='".$field_about_us_category."'")->fetchAll();
+
+					foreach($result as $key1 => $value1)
+					{
+						$options = ['absolute' => TRUE];
+						$url_object = Drupal\Core\Url::fromRoute('entity.node.canonical', ['node' => $value1->nid], $options);
+
+						$result[$key1]->full_url = $url_object;
+					}
+
+					/*echo "<pre>";
+					print_r($result);
+					echo "</pre>";*/
+
+					//$variables['related_about_us'] = $result;
+
+					/*$term_ids =  array ($field_about_us_category);
+					$nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties([
+						'field_tags' => $term_ids,
+					]);
+
+					print_r($nodes);*/
+
+
+					/*$query = \Drupal::database()->select('taxonomy_index', 'ti');
+					$query->fields('ti', ['nid']);
+					$query->condition('ti.tid', $field_about_us_category);
+					$nodes = $query->execute()->fetchAssoc();
+
+					
+
+					print_r($nodes);*/
+
+				/*}
+			}
+		}
+	}*/
+
+/*function pbcom_preprocess_node(&$vars) {
+  // Get the node ID.
+	$nid = $vars['node']->id();
+
+  // Get the author ID.
+	$uid = $vars['node']->getOwnerId();
+
+	//echo "Test=".$nid."  yes=".$uid;
+}*/
+
+/*function pbcom_preprocess_node(&$variable)
+{
+
+	/*if ($variable['node']->getType() === 'about_us')
+	{*/
+		/*$node = \Drupal::routeMatch()->getParameter('node');
+		if ($node instanceof \Drupal\node\NodeInterface)
+		{
+			$nid = $node->id();
+		}
+		if ($node && isset($nid)) 
+		{
+			$node = node_load($nid);
+			/*$variables['field_image_view'] =  $node->field_image_view->getString();  
+			$variables['field_title'] =  $node->getTitle();  
+			$variables['field_header_image'] =  $node->get('field_header_image')->getValue();  
+
+			$image_id = $variables['field_header_image'][0]['target_id'];
+			$image_file  = file_load($image_id);
+			$image_public_uri = $image_file->getFileUri();
+			$variables['header_image_url'] = file_create_url($image_public_uri);*/
+
+			/*echo "Test=".$node;
+
+		}
+	//}
+
+	}*/
