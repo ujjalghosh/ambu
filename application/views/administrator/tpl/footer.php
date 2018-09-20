@@ -241,9 +241,10 @@
 <!-- Select2 -->
 <script src="<?php echo base_url('assets/administrator/bower_components/select2/dist/js/select2.full.min.js');?>"></script>
 <!-- Sweet alert -->
-<script src="https://cdn.jsdelivr.net/sweetalert2/5.3.8/sweetalert2.js"></script>
-<link href="https://cdn.jsdelivr.net/sweetalert2/5.3.8/sweetalert2.css" rel="stylesheet"/>
-
+<!-- <script src="https://cdn.jsdelivr.net/sweetalert2/5.3.8/sweetalert2.js"></script>
+<link href="https://cdn.jsdelivr.net/sweetalert2/5.3.8/sweetalert2.css" rel="stylesheet"/> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" rel="stylesheet"/>
 <!-- AdminLTE for demo purposes -->
 <script src="<?php echo base_url('assets/administrator/dist/js/demo.js');?>"></script>
 
@@ -279,11 +280,13 @@
       
 </script>
 <script type="text/javascript">
+      jQuery(document).ready(function(){
       jQuery(".form-horizontal").validationEngine('attach', {
-      relative: true,
+      relative: true,      
       overflownDIV:"#divOverflown",
       promptPosition:"topLeft"
     });
+      });
 </script>
 
 <script type="text/javascript">
@@ -315,6 +318,48 @@ function CheckIdleTime() {
     }
 }
 
+$(document).ready(function() { 
+
+ del=  function(aa,bb,cc) {
+  bs=aa.replace(/\b0+/g, "");
+  var a = confirm("Are you sure, you want to delete this " + cc + "?");
+  if (a) {
+    location.href = bb + "?cid=" + bs + "&action=delete";
+  }
+}
+
+  status_update = function(aa, bb, cc) {
+     swal({
+        title: "Are you sure want to "+bb+"?",
+        text: "",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, unjoin me!",
+        closeOnConfirm: false,
+    }, function (isConfirm) {
+        if (!isConfirm) return;
+    jQuery('.page-loader').show();
+$.ajax({
+  url: cc,
+  type: 'POST',
+  dataType: 'json',
+  data: {id: aa},
+})
+.done(function(data) {
+  jQuery('.page-loader').hide();
+if(data.status==true){
+// swal('', data.msg ,  'success');
+return true;
+}
+else{
+   swal('', data.msg ,  'error');
+}
+}) 
+});
+}
+
+  } );
 
 </script>
     

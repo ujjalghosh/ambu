@@ -58,6 +58,20 @@
           </ul>
         </li>
 
+        <li class="treeview <?=$module_slug=='services'  ?'menu-open':''?>">
+          <a href="#">
+            <i class="fa fa-map-marker"></i>
+            <span>Master</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu" style="<?=$module_slug=='services'   ?'display: block;':''?>">
+            <li class="<?=$module_slug=='services' ? 'active' : ''; ?>"><a href="administrator/master/services"><i class="fa fa-circle-o text-red"></i>Services </a></li>
+
+          </ul>
+        </li>
+
 
         <li class="treeview <?=$module_slug=='network_users' ?'menu-open':''?>">
           <a href="#">

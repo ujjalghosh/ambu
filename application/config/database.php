@@ -194,15 +194,15 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 
-	'dsn'	=> 'mysql:host=localhost;dbname=skltdco1_gps;charset=utf8;',
+	'dsn'	=> 'mysql:host=localhost;dbname=gps;charset=utf8;',
 
 	'hostname' => 'localhost',
 
-	'username' => 'skltdco1_arshad',
+	'username' => 'root',
 
-	'password' => '@test@1234@',
+	'password' => '',
 
-	'database' => 'skltdco1_gps',
+	'database' => 'gps',
 
 	'port'	   => '',
 
